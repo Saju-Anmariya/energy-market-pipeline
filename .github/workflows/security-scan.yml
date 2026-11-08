@@ -1,0 +1,35 @@
+name: Security scan (OWASP ZAP)
+
+on:
+  workflow_dispatch:   # started by hand from the Actions tab
+
+jobs:
+  zap-api-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start the API
+        run: |
+          docker build -t energy-market-api .
+          docker run -d --name api -p 8000:8000 energy-market-api
+          for i in $(seq 1 30); do
+            curl -fs http://localhost:8000/health && break
+            sleep 2
+          done
+
+      - name: Run the ZAP API scan
+        run: |
+          mkdir -p zap-report
+          chmod 777 zap-report
+          docker run --rm --network host -v "$(pwd)/zap-report:/zap/wrk/:rw" \
+            ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+            -t http://localhost:8000/openapi.json -f openapi \
+            -r report.html -w report.md -I
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: zap-report/
