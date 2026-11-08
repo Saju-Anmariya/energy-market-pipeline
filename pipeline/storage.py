@@ -43,3 +43,17 @@ def upsert(conn: sqlite3.Connection, df: pd.DataFrame) -> int:
 
 def count_rows(conn: sqlite3.Connection) -> int:
     return conn.execute("SELECT COUNT(*) FROM market_data").fetchone()[0]
+
+def export_csv(conn: sqlite3.Connection, path: str) -> None:
+    df = pd.read_sql_query("SELECT * FROM market_data ORDER BY timestamp", conn)
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(path, index=False)
+
+
+def import_csv(conn: sqlite3.Connection, path: str) -> int:
+    """Loads earlier results from a CSV file, if it exists."""
+    if not Path(path).exists():
+        return 0
+    df = pd.read_csv(path)
+    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+    return upsert(conn, df)
