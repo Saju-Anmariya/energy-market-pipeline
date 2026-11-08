@@ -17,7 +17,11 @@ jobs:
             curl -fs http://localhost:8000/health && break
             sleep 2
           done
-
+      - name: Show the commit and the response headers
+        run: |
+          git log -1 --oneline
+          curl -si http://localhost:8000/health
+          
       - name: Run the ZAP API scan
         run: |
           mkdir -p zap-report
