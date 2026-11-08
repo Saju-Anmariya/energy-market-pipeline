@@ -10,6 +10,16 @@ CSV_PATH = Path("data/market.csv")
 app = FastAPI(title="Energy Market API", version="0.1.0")
 
 
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
+
+
 def load_data(path: Path = CSV_PATH) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame()
