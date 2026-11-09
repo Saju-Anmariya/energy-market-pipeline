@@ -45,6 +45,8 @@ Prices are published ahead of time, while generation and load exist only for int
 - `ci.yml` runs the tests and a dependency vulnerability scan (pip-audit) on every push.
 - `daily-run.yml` runs the pipeline every day at 06:30 UTC and can also be started by hand. The report appears on the run summary page.
 
+- `security-scan.yml` runs an OWASP ZAP scan of the API (started manually). Results and fixes: see [SECURITY.md](SECURITY.md).
+
 ## Run it locally
 
 ```bash
